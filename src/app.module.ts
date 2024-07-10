@@ -3,16 +3,19 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { config } from 'dotenv';
-import { ConfigModule } from '@nestjs/config';
 import { FileModule } from './file/file.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { MulterModule } from '@nestjs/platform-express';
+import { AuthModule } from './auth/auth.module';
 
 config();
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    MulterModule.register({
+      dest: '../static',
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,
@@ -29,7 +32,8 @@ config();
       rootPath: join(__dirname, '..', 'static'),
     }),
     UserModule,
-    FileModule
+    FileModule,
+    AuthModule
   ],
   controllers: [],
   providers: [],

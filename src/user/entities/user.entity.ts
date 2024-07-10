@@ -3,7 +3,7 @@ import { UserInt } from '../interface/user.interface';
 
 @Entity()
 export class User implements UserInt {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -12,13 +12,16 @@ export class User implements UserInt {
   @Column()
   email: string;
 
+  @Column({ default: "" })
+  password: string;
+
   @Column()
   description: string;
 
   @Column()
-  avatarUrl: string | null;
+  avatarUrl: string;
 
-  @Column()
+  @Column({ default: 0 })
   subscriptionAmount: number;
 
   @Column()
@@ -27,7 +30,7 @@ export class User implements UserInt {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ default: false })
   isActive: boolean;
 
   @Column("text", { array: true })

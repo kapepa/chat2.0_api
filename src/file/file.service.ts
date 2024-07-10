@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
+import { Observable, of, switchMap } from 'rxjs';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class FileService {
@@ -20,28 +23,15 @@ export class FileService {
     return `This action updates a #${id} file`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} file`;
-  }
+  remove(filename: string): Observable<boolean> {
+    return of(filename).pipe(
+      switchMap(async (filename) => {
+        const fullpath = join(__dirname, '..', '..', 'static', filename);
+        if (!fs.existsSync(fullpath)) return false;
 
-  uploadFile(file: Express.Multer.File) {
-    // Add your specific file upload logic here, including:
-
-    // 1. Validation (e.g., file size, type, MIME type)
-    // ...
-
-    // 2. Custom filename generation (optional)
-    // ...
-
-    // 3. Advanced storage logic (optional)
-    // ...
-
-    // 4. Return relevant information or perform further actions
-    return {
-      originalname: file.originalname,
-      filename: file.filename,
-      size: file.size,
-      mimetype: file.mimetype,
-    };
+        fs.unlinkSync(fullpath);
+        return true;
+      })
+    );
   }
 }

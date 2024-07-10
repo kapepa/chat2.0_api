@@ -1,7 +1,7 @@
 import { ArrayMinSize, IsEmail, IsOptional, IsString } from "class-validator";
 import { UserInt } from "../interface/user.interface";
 
-type CreateExtract = Pick<Exclude<UserInt, "avatarUrl">, "username" | "email" | "description" | "avatarUrl" | "firstName" | "lastName" | "stack" | "city"> & { avatarUrl: UserInt["avatarUrl"] | File };
+type CreateExtract = Pick<Exclude<UserInt, "avatarUrl">, "username" | "password" | "email" | "description" | "avatarUrl" | "firstName" | "lastName" | "stack" | "city"> & { avatarUrl: UserInt["avatarUrl"] | File };
 
 export class CreateUserDto implements CreateExtract {
   @IsString()
@@ -9,6 +9,9 @@ export class CreateUserDto implements CreateExtract {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  password: string;
 
   @IsString()
   description: string;

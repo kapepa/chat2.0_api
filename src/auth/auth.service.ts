@@ -1,29 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt'
-import { from, Observable } from 'rxjs';
+import { forkJoin, from, Observable, of, switchMap } from 'rxjs';
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { UserService } from 'src/user/user.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserInt } from 'src/user/interface/user.interface';
+
+type PayloadType = Pick<UserInt, "id" | "username" | "avatarUrl" | "firstName" | "lastName"> & {sub: string}
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  login({ email, password }: LoginAuthDto): Observable<LoginType> {
+    return this.userService.userOne({
+      where: {
+        email
+      }
+    }).pipe(
+      switchMap((profile) => {
+        if (!profile) throw new UnauthorizedException("This email doesn't existing");
+
+        const payload: PayloadType = { 
+          sub: profile.id, 
+          id: profile.id,
+          username: profile.username,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          avatarUrl: profile.avatarUrl,
+        };
+
+        return forkJoin([
+          this.comparePasswords(password, profile.password),
+          this.jwtToken(payload),
+        ]).pipe(
+          switchMap(([compare, token]) => {
+            if (!compare) throw new UnauthorizedException("This email doesn't existing");
+            return of({ access_token: token })
+          })
+        )
+      })
+    )
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  jwtToken(payload: PayloadType): Observable<string> {
+    return from(this.jwtService.signAsync(payload))
   }
 
   hashPassword(password: string): Observable<string> {
@@ -31,7 +56,7 @@ export class AuthService {
     return from(bcrypt.hash(password, saltRounds));
   }
 
-  async comparePasswords(plainPassword: string, hashedPassword: string): Promise<boolean> {
-    return await bcrypt.compare(plainPassword, hashedPassword);
+  comparePasswords(plainPassword: string, hashedPassword: string): Observable<boolean> {
+    return from(bcrypt.compare(plainPassword, hashedPassword));
   }
 }

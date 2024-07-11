@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { DeleteResult, FindOneOptions, Repository } from 'typeorm';
-import { forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, toArray } from 'rxjs';
+import { forkJoin, from, Observable, switchMap, tap } from 'rxjs';
 import { UserInt } from './interface/user.interface';
 import { FileService } from 'src/file/file.service';
 import { AuthService } from 'src/auth/auth.service';
@@ -16,6 +16,7 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly fileService: FileService,
+    @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
 

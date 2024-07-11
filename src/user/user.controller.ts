@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,6 +8,7 @@ import { catchError, Observable, of, switchMap } from 'rxjs';
 import { UserInt } from './interface/user.interface';
 import { FileService } from 'src/file/file.service';
 import { DeleteResult } from 'typeorm';
+import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -16,7 +17,7 @@ export class UserController {
     private readonly fileService: FileService,
   ) {}
 
-  @Post()
+  @Post("/create")
   @UseInterceptors(FileInterceptor('avatarUrl'))
   create(@UploadedFile(SharpPipe) avatarUrl, @Body() createUserDto: CreateUserDto): Observable<UserInt> {
     return this.userService
@@ -35,17 +36,24 @@ export class UserController {
     );
   }
 
-  @Get()
+  @Get('/myself')
+  @UseGuards(AuthGuard)
+  myself(@Request() req): Observable<UserInt> {
+    const { sub } = req.user;
+    return this.userService.findOne(sub)
+  }
+
+  @Get('/all')
   findAll(): Observable<UserInt[]> {
     return this.userService.findAll();
   }
 
-  @Get(':id')
+  @Get('/one/:id')
   findOne(@Param('id') id: string): Observable<UserInt> {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('/update/:id')
   @UseInterceptors(FileInterceptor('avatarUrl'))
   update(@Param('id') id: string, @UploadedFile(SharpPipe) avatarUrl, @Body() updateUserDto: UpdateUserDto) {
     return this.userService
@@ -64,7 +72,7 @@ export class UserController {
     );
   }
 
-  @Delete(':id')
+  @Delete('/one/:id')
   remove(@Param('id') id: string): Observable<DeleteResult> {
     return this.userService.remove(id);
   }

@@ -12,7 +12,7 @@ export class User implements UserInt {
   @Column()
   email: string;
 
-  @Column({ default: "" })
+  @Column({ default: "", select: false })
   password: string;
 
   @Column()
@@ -30,7 +30,7 @@ export class User implements UserInt {
   @Column()
   lastName: string;
 
-  @Column({ default: false })
+  @Column({ default: false, select: false })
   isActive: boolean;
 
   @Column("text", { array: true })

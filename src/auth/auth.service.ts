@@ -100,14 +100,14 @@ export class AuthService {
 
   jwtToken(payload: PayloadType, options?: JwtSignOptions): Observable<string> {
     return from(this.jwtService.signAsync(payload, options))
-  }
+  };
 
   hashPassword(password: string): Observable<string> {
     const saltRounds = 10;
     return from(bcrypt.hash(password, saltRounds));
-  }
+  };
 
   comparePasswords(plainPassword: string, hashedPassword: string): Observable<boolean> {
     return from(bcrypt.compare(plainPassword, hashedPassword));
-  }
+  };
 }

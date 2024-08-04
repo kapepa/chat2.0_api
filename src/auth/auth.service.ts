@@ -99,7 +99,7 @@ export class AuthService {
   }
 
   jwtToken(payload: PayloadType, options?: JwtSignOptions): Observable<string> {
-    return from(this.jwtService.signAsync(payload, options))
+    return from(this.jwtService.signAsync(payload, options));
   };
 
   hashPassword(password: string): Observable<string> {

@@ -8,6 +8,7 @@ import { forkJoin, from, Observable, switchMap, tap } from 'rxjs';
 import { UserInt } from './interface/user.interface';
 import { FileService } from 'src/file/file.service';
 import { AuthService } from 'src/auth/auth.service';
+import { FindUsersDto } from './dto/find-users.dto';
 
 @Injectable()
 export class UserService {
@@ -43,6 +44,12 @@ export class UserService {
     return from(this.userRepository.find())
   }
 
+  findUsers(props: FindUsersDto): Observable<UserInt[]> {
+    return from(this.userRepository.find({
+      where: props
+    }))
+  }
+
   findOne(id: string): Observable<UserInt> {
     return from(this.userRepository.findOne({
       where: {
@@ -60,11 +67,12 @@ export class UserService {
     .pipe(
       switchMap((profile) => {
         if (!profile) throw new NotFoundException("This user was not found");
-        const updateAvatar = updateUserDto.avatarUrl !== profile.avatarUrl
+        const updateAvatar = updateUserDto.avatarUrl !== profile.avatarUrl;
+        const mergeProfile = {...profile, ...updateUserDto};
 
-        return from(this.userRepository.update(id, updateUserDto)).pipe(
+        return from(this.userRepository.update(id, mergeProfile)).pipe(
           tap(() => {
-            if (updateAvatar) this.fileService.remove(profile.avatarUrl).subscribe()
+            if (updateAvatar && !!updateUserDto.avatarUrl) this.fileService.remove(profile.avatarUrl).subscribe()
           }),
           switchMap(() => {
             return from(this.userRepository.findOne({

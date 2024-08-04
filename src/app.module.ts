@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { AuthModule } from './auth/auth.module';
+import { SubscribeModule } from './subscribe/subscribe.module';
 
 config();
 
@@ -33,7 +34,8 @@ config();
     }),
     UserModule,
     FileModule,
-    AuthModule
+    AuthModule,
+    SubscribeModule,
   ],
   controllers: [],
   providers: [],
